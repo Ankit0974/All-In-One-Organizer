@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-User Expense Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image:url(exp-img-2.jpg);
+            background-size:cover;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .main-container {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            width: 350px;
+            text-align: center;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .save-btn { background: #28A745; color: white; }
+        .save-btn:hover { background: #218838; }
+        .delete-btn { background: #DC3545; color: white; }
+        .delete-btn:hover { background: #C82333; }
+        .add-btn { background: #007BFF; color: white; }
+        .add-btn:hover { background: #0056b3; }
+        .clear-btn { background: #FF5733; color: white; }
+        .clear-btn:hover { background: #C70039; }
+        .total {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .chart-container {
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        canvas {
+            max-width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="container">
+            <h1>Multi-User Expense Tracker</h1>
+            <input type="text" id="username" placeholder="Enter your name">
+            <button class="save-btn" onclick="saveUser()">Save Name</button>
+            <select id="userSelect" onchange="selectUser()">
+                <option>Select User</option>
+            </select>
+            <button class="delete-btn" onclick="deleteUser()">Delete User</button>
+            <p>Tracking Expenses for: <strong id="currentUser">None</strong></p>
+            <input type="text" id="expenseDesc" placeholder="Expense Description">
+            <input type="number" id="expenseAmount" placeholder="Amount">
+            <button class="add-btn" onclick="addExpense()">Add Expense</button>
+            <button class="clear-btn" onclick="clearExpenses()">Clear All</button>
+            <p class="total">Total: ₹<span id="totalAmount">0</span></p>
+        </div>
+        <div class="chart-container">
+            <canvas id="expenseChart"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        let users = {};
+        let currentUser = null;
+        let chart;
+
+        function saveUser() {
+            let username = document.getElementById("username").value.trim();
+            if (username === "") return alert("Please enter a name");
+            if (!users[username]) users[username] = { expenses: [] };
+            updateUserDropdown();
+            document.getElementById("username").value = "";
+        }
+
+        function updateUserDropdown() {
+            let userSelect = document.getElementById("userSelect");
+            userSelect.innerHTML = "<option>Select User</option>";
+            Object.keys(users).forEach(user => {
+                let option = document.createElement("option");
+                option.text = user;
+                userSelect.add(option);
+            });
+        }
+
+        function selectUser() {
+            let userSelect = document.getElementById("userSelect");
+            currentUser = userSelect.value;
+            document.getElementById("currentUser").innerText = currentUser === "Select User" ? "None" : currentUser;
+            updateTotal();
+            updateChart();
+        }
+
+        function deleteUser() {
+            if (!currentUser || currentUser === "Select User") return alert("Please select a user to delete");
+            delete users[currentUser];
+            currentUser = null;
+            updateUserDropdown();
+            document.getElementById("currentUser").innerText = "None";
+            document.getElementById("totalAmount").innerText = "0";
+            updateChart();
+        }
+
+        function addExpense() {
+            if (!currentUser || currentUser === "Select User") return alert("Please select a user");
+            let desc = document.getElementById("expenseDesc").value.trim();
+            let amount = parseFloat(document.getElementById("expenseAmount").value);
+            if (desc === "" || isNaN(amount) || amount <= 0) return alert("Please enter valid details");
+            users[currentUser].expenses.push({ desc, amount });
+            updateTotal();
+            updateChart();
+        }
+
+        function updateTotal() {
+            let total = users[currentUser]?.expenses.reduce((sum, exp) => sum + exp.amount, 0) || 0;
+            document.getElementById("totalAmount").innerText = total;
+        }
+
+        function updateChart() {
+            let labels = users[currentUser]?.expenses.map(e => e.desc) || [];
+            let data = users[currentUser]?.expenses.map(e => e.amount) || [];
+            if (chart) chart.destroy();
+            chart = new Chart(document.getElementById('expenseChart').getContext('2d'), {
+                type: 'pie',
+                data: { labels, datasets: [{ data, backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4CAF50', '#FF9800'] }] }
+            });
+        }
+    </script>
+</body>
+</html>

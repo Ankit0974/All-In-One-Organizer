@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Income Tracker</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image:url(income-img.jpg);
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .main-container {
+            display: flex;
+            gap: 20px;
+            max-width: 800px;
+            width: 100%;
+        }
+        .container, .investment-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            flex: 1;
+        }
+        h2, h3 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 8px;
+            box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #ff7eb3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #ff5277;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            background: #f3f3f3;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .summary p {
+            font-weight: bold;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="container">
+            <h2>Income Tracker</h2>
+            <input type="number" id="salary" placeholder="Enter your total salary">
+            <h3>Add an Expense:</h3>
+            <input type="text" id="expense-category" placeholder="Enter expense category">
+            <input type="number" id="expense-amount" placeholder="Enter amount spent">
+            <button onclick="addExpense()">Add Expense</button>
+            <button onclick="calculateBalance()">Calculate</button>
+            <h3>Expense Summary:</h3>
+            <ul id="expense-list"></ul>
+            <div class="summary">
+                <p>Total Expenses: ₹<span id="total-expenses">0</span></p>
+                <p>Remaining Balance: ₹<span id="remaining-balance">0</span></p>
+            </div>
+        </div>
+        <div class="investment-container">
+            <h3>Investment Suggestions:</h3>
+            <ul id="investment-suggestions"></ul>
+        </div>
+    </div>
+    <script>
+        let expenses = {};
+        
+        function addExpense() {
+            let category = document.getElementById("expense-category").value;
+            let amount = parseFloat(document.getElementById("expense-amount").value);
+            
+            if (!category || isNaN(amount) || amount < 0) {
+                alert("Invalid input!");
+                return;
+            }
+            expenses[category] = (expenses[category] || 0) + amount;
+            document.getElementById("expense-category").value = "";
+            document.getElementById("expense-amount").value = "";
+            updateExpenseList();
+        }
+        
+        function updateExpenseList() {
+            let expenseList = document.getElementById("expense-list");
+            expenseList.innerHTML = "";
+            let total = 0;
+            for (let cat in expenses) {
+                total += expenses[cat];
+                let li = document.createElement("li");
+                li.textContent = `${cat}: ₹${expenses[cat]}`;
+                expenseList.appendChild(li);
+            }
+            document.getElementById("total-expenses").textContent = total;
+        }
+        
+        function calculateBalance() {
+            let salary = parseFloat(document.getElementById("salary").value);
+            if (isNaN(salary) || salary < 0) {
+                alert("Invalid salary input!");
+                return;
+            }
+            let totalExpense = Object.values(expenses).reduce((a, b) => a + b, 0);
+            let remainingBalance = salary - totalExpense;
+            document.getElementById("remaining-balance").textContent = remainingBalance;
+            showInvestmentSuggestions(remainingBalance);
+        }
+        
+        function showInvestmentSuggestions(balance) {
+            let suggestions = document.getElementById("investment-suggestions");
+            suggestions.innerHTML = "";
+            let investmentOptions = [];
+            
+            if (balance > 50000) {
+                investmentOptions = [
+                    "Invest in Real Estate for long-term gains",
+                    "Stocks for high returns",
+                    "Fixed Deposit for stable returns",
+                    "Gold investment for security"
+                ];
+            } else if (balance > 20000) {
+                investmentOptions = [
+                    "Mutual Funds for moderate risk",
+                    "Gold or Digital Gold",
+                    "Fixed Deposit for safe returns"
+                ];
+            } else if (balance > 5000) {
+                investmentOptions = [
+                    "Recurring Deposit for savings",
+                    "SIP in Mutual Funds",
+                    "Emergency Fund Savings"
+                ];
+            } else if (balance > 0) {
+                investmentOptions = [
+                    "Start an emergency savings fund",
+                    "Look for small investment plans like RD or SIP",
+                    "Budget planning to increase savings"
+                ];
+            } else {
+                investmentOptions = ["Try reducing unnecessary expenses to start saving and investing."];
+            }
+            
+            investmentOptions.forEach(option => {
+                let li = document.createElement("li");
+                li.textContent = option;
+                suggestions.appendChild(li);
+            });
+        }
+    </script>
+</body>
+</html>
